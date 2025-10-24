@@ -57,6 +57,18 @@ SHOULD be sorted by epoch in ascending order. The blob schedule MAY be empty.
 
 ### Block processing
 
+```python
+def process_block(state: BeaconState, block: BeaconBlock) -> None:
+    process_block_header(state, block)
+    process_withdrawals(state, block.body.execution_payload)
+    process_execution_payload(state, block.body, EXECUTION_ENGINE)
+    process_randao(state, block.body)
+    process_eth1_data(state, block.body)
+    # [Modified in Fulu]
+    process_operations(state, block.body)
+    process_sync_aggregate(state, block.body.sync_aggregate)
+```
+
 #### Execution payload
 
 ##### Modified `process_execution_payload`
@@ -142,22 +154,6 @@ def process_operations(state: BeaconState, body: BeaconBlockBody) -> None:
     for_ops(body.execution_requests.deposits, process_deposit_request)
     for_ops(body.execution_requests.withdrawals, process_withdrawal_request)
     for_ops(body.execution_requests.consolidations, process_consolidation_request)
-```
-
-##### Modified `process_block`
-
-*Note*: The function `process_block` is modified in Fulu to call the updated `process_operations` function.
-
-```python
-def process_block(state: BeaconState, block: BeaconBlock) -> None:
-    process_block_header(state, block)
-    process_withdrawals(state, block.body.execution_payload)
-    process_execution_payload(state, block.body, EXECUTION_ENGINE)
-    process_randao(state, block.body)
-    process_eth1_data(state, block.body)
-    # [Modified in Fulu]
-    process_operations(state, block.body)
-    process_sync_aggregate(state, block.body.sync_aggregate)
 ```
 
 ## Containers
