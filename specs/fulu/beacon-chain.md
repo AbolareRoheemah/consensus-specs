@@ -151,13 +151,11 @@ def process_operations(state: BeaconState, body: BeaconBlockBody) -> None:
 ```python
 def process_block(state: BeaconState, block: BeaconBlock) -> None:
     process_block_header(state, block)
-    # [Modified in Fulu:EIP7549]
     process_withdrawals(state, block.body.execution_payload)
-    # [Modified in Fulu:EIP7549]
     process_execution_payload(state, block.body, EXECUTION_ENGINE)
     process_randao(state, block.body)
     process_eth1_data(state, block.body)
-    # [Modified in Fulu:EIP7549]
+    # [Modified in Fulu]
     process_operations(state, block.body)
     process_sync_aggregate(state, block.body.sync_aggregate)
 ```

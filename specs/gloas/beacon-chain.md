@@ -1039,7 +1039,7 @@ def process_operations(state: BeaconState, body: BeaconBlockBody) -> None:
     for_ops(body.voluntary_exits, process_voluntary_exit)
     for_ops(body.bls_to_execution_changes, process_bls_to_execution_change)
     # [Modified in Gloas:EIP7732]
-    for_ops(body.execution_requests.deposits, process_deposit_request)
+    # Removed `process_deposit_request`
     # [Modified in Gloas:EIP7732]
     # Removed `process_withdrawal_request`
     # [Modified in Gloas:EIP7732]
