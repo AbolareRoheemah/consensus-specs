@@ -117,6 +117,51 @@ def process_execution_payload(
     )
 ```
 
+#### Operations
+
+##### Modified `process_operations`
+
+*Note*: The function `process_operations` is modified to remove support for the former deposit mechanism.
+
+```python
+def process_operations(state: BeaconState, body: BeaconBlockBody) -> None:
+    # [Modified in Fulu]
+    # Verify that no former deposits remain
+    assert len(body.deposits) == 0
+    assert state.eth1_data.deposit_count >= state.deposit_requests_start_index
+
+    def for_ops(operations: Sequence[Any], fn: Callable[[BeaconState, Any], None]) -> None:
+        for operation in operations:
+            fn(state, operation)
+
+    for_ops(body.proposer_slashings, process_proposer_slashing)
+    for_ops(body.attester_slashings, process_attester_slashing)
+    for_ops(body.attestations, process_attestation)
+    for_ops(body.voluntary_exits, process_voluntary_exit)
+    for_ops(body.bls_to_execution_changes, process_bls_to_execution_change)
+    for_ops(body.execution_requests.deposits, process_deposit_request)
+    for_ops(body.execution_requests.withdrawals, process_withdrawal_request)
+    for_ops(body.execution_requests.consolidations, process_consolidation_request)
+```
+
+##### Modified `process_block`
+
+*Note*: The function `process_block` is modified in Fulu to call the updated `process_operations` function.
+
+```python
+def process_block(state: BeaconState, block: BeaconBlock) -> None:
+    process_block_header(state, block)
+    # [Modified in Fulu:EIP7549]
+    process_withdrawals(state, block.body.execution_payload)
+    # [Modified in Fulu:EIP7549]
+    process_execution_payload(state, block.body, EXECUTION_ENGINE)
+    process_randao(state, block.body)
+    process_eth1_data(state, block.body)
+    # [Modified in Fulu:EIP7549]
+    process_operations(state, block.body)
+    process_sync_aggregate(state, block.body.sync_aggregate)
+```
+
 ## Containers
 
 ### Extended Containers

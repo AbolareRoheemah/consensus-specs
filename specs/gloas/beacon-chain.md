@@ -1051,10 +1051,9 @@ calls to `process_deposit_request`, `process_withdrawal_request`, and
 
 ```python
 def process_operations(state: BeaconState, body: BeaconBlockBody) -> None:
-    # Verify that outstanding deposits are processed up to the maximum number of deposits
-    assert len(body.deposits) == min(
-        MAX_DEPOSITS, state.eth1_data.deposit_count - state.eth1_deposit_index
-    )
+    # Verify that no former deposits remain
+    assert len(body.deposits) == 0
+    assert state.eth1_data.deposit_count >= state.deposit_requests_start_index
 
     def for_ops(operations: Sequence[Any], fn: Callable[[BeaconState, Any], None]) -> None:
         for operation in operations:
@@ -1065,11 +1064,11 @@ def process_operations(state: BeaconState, body: BeaconBlockBody) -> None:
     for_ops(body.attester_slashings, process_attester_slashing)
     # [Modified in Gloas:EIP7732]
     for_ops(body.attestations, process_attestation)
-    for_ops(body.deposits, process_deposit)
+    # for_ops(body.deposits, process_deposit)
     for_ops(body.voluntary_exits, process_voluntary_exit)
     for_ops(body.bls_to_execution_changes, process_bls_to_execution_change)
     # [Modified in Gloas:EIP7732]
-    # Removed `process_deposit_request`
+    for_ops(body.execution_requests.deposits, process_deposit_request)
     # [Modified in Gloas:EIP7732]
     # Removed `process_withdrawal_request`
     # [Modified in Gloas:EIP7732]
